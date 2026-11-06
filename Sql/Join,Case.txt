@@ -1,0 +1,46 @@
+Etrade 2
+1)Hər müstərinin neçə sifarişi oldugunu və ortalama-ümumi qiyməti 300 dən yuksək olanları tap
+select u.NAMESURNAME,
+count(bd.AMOUNT),
+SUM(bd.PRICE)
+from USER_ u
+join BASKET b on b.ID=u.ID
+join BASKETDETAIL bd on bd.BASKETID=b.ID
+group by u.NAMESURNAME
+having SUM(bd.PRICE)>300
+
+Etrade
+2)Her saticinin satislarini  tarixe gore sirala ,her satis ucun kumulatif hesabla
+
+
+SELECT 
+    s.SALESMAN,
+    s.DATE_,
+    Amount,
+    SUM(Amount) OVER (PARTITION BY s.SALESMAN ORDER BY s.Date_) AS CumulativeSum
+FROM Sales s
+ORDER BY s.SALESMAN, s.DATE_;
+
+Etrade -Sales
+3)
+Verilmiş satış cədvəlinə əsasən məhsulları Qiymət Kateqoriyasına bol:
+
+Price  sütunu əsasında:
+
+Price < 50 → 'Ucuz'
+
+Price  50 ve 1000 arasindadirsa → 'Orta'
+
+Price > 1000 → 'Bahalı'
+
+Price qiymet yoxdursa  → 'Məlum deyil'
+use ETRADE
+
+SELECT PRICE,
+       CASE 
+           WHEN PRICE<50 THEN 'Ucuz'
+           WHEN PRICE between 50 and 1000 THEN 'Orta'
+           WHEN PRICE>1000 THEN 'Bahalı'
+           ELSE 'Məlum deyil'
+       END AS new_alias
+FROM SALES;

@@ -1,0 +1,260 @@
+-- 1) Hər sifariş üçün məlumatlar
+SELECT 
+    (SELECT CustomerName FROM Customers WHERE CustomerID = o.CustomerID) AS CustomerName,
+    o.OrderDate,
+    (SELECT SUM(Quantity * UnitPrice) FROM OrderDetails WHERE OrderID = o.OrderID) AS TotalAmount
+FROM Orders o;
+
+-- 2) Heç sifarişi olmayan müştərilər
+SELECT CustomerID, CustomerName, City
+FROM Customers
+WHERE CustomerID NOT IN (SELECT DISTINCT CustomerID FROM Orders);
+
+-- 3) Hər məhsul üçün sifariş sayı
+SELECT 
+    ProductName,
+    Category,
+    (SELECT COUNT(DISTINCT OrderID) FROM OrderDetails WHERE ProductID = p.ProductID) AS OrderCount
+FROM Products p;
+
+-- 4) Şəhər üzrə müştəri sayı
+SELECT City, COUNT(CustomerID) AS CustomerCount
+FROM Customers
+GROUP BY City;
+
+-- 5) Hər müştəri üzrə sifariş sayı və ümumi məbləğ
+SELECT 
+    CustomerName,
+    (SELECT COUNT(OrderID) FROM Orders WHERE CustomerID = c.CustomerID) AS TotalOrders,
+    (SELECT SUM(od.Quantity * od.UnitPrice) 
+     FROM OrderDetails od 
+     JOIN Orders o ON od.OrderID = o.OrderID 
+     WHERE o.CustomerID = c.CustomerID) AS TotalSpent
+FROM Customers c;
+
+-- 6) Kateqoriya üzrə satış miqdarı və məbləği
+SELECT 
+    Category,
+    SUM(Quantity) AS TotalQuantity,
+    SUM(Quantity * UnitPrice) AS TotalRevenue
+FROM OrderDetails od
+JOIN Products p ON od.ProductID = p.ProductID
+GROUP BY Category;
+
+-- 7) Heç satılmayan məhsullar
+SELECT ProductID, ProductName
+FROM Products
+WHERE ProductID NOT IN (SELECT DISTINCT ProductID FROM OrderDetails);
+
+-- 8) Ən çox sifariş verən müştəri
+SELECT TOP 1 CustomerName
+FROM Customers
+WHERE CustomerID = (
+    SELECT TOP 1 CustomerID 
+    FROM Orders 
+    GROUP BY CustomerID 
+    ORDER BY COUNT(OrderID) DESC
+);
+
+-- 9) Ən çox gəlir gətirən məhsul
+SELECT TOP 1 ProductName
+FROM Products p
+JOIN OrderDetails od ON p.ProductID = od.ProductID
+GROUP BY p.ProductID, ProductName
+ORDER BY SUM(od.Quantity * od.UnitPrice) DESC;
+
+-- 10) Hər ay üzrə ümumi satış məbləği
+SELECT 
+    FORMAT(OrderDate, 'yyyy-MM') AS OrderMonth,
+    SUM(Quantity * UnitPrice) AS MonthlyTotal
+FROM Orders o
+JOIN OrderDetails od ON o.OrderID = od.OrderID
+GROUP BY FORMAT(OrderDate, 'yyyy-MM');
+
+-- 11) Ən çox məhsul (Quantity) alan müştəri
+SELECT TOP 1 CustomerName
+FROM Customers
+WHERE CustomerID = (
+    SELECT TOP 1 o.CustomerID
+    FROM Orders o
+    JOIN OrderDetails od ON o.OrderID = od.OrderID
+    GROUP BY o.CustomerID
+    ORDER BY SUM(od.Quantity) DESC
+);
+
+-- 12) Orta sifariş məbləği
+SELECT AVG(OrderTotal) AS AverageOrderValue
+FROM (
+    SELECT SUM(Quantity * UnitPrice) AS OrderTotal
+    FROM OrderDetails
+    GROUP BY OrderID
+) AS SubQuery;
+
+-- 13) Hər sifarişdə neçə fərqli məhsul var
+SELECT OrderID, COUNT(ProductID) AS UniqueProducts
+FROM OrderDetails
+GROUP BY OrderID;
+
+-- 14) 1000-dən çox alış edən müştərilər
+SELECT CustomerName
+FROM Customers c
+WHERE (SELECT SUM(Quantity * UnitPrice) 
+       FROM OrderDetails od 
+       JOIN Orders o ON od.OrderID = o.OrderID 
+       WHERE o.CustomerID = c.CustomerID) > 1000;
+Kodu dikkatli kullanın.
+Bu sorğuların işləməsi üçün cədvəllərindəki sütun adlarının (məsələn: UnitPrice və ya Price) eyni olduğundan əmin olmalısan.
+Məlumat bazanda cədvəl adları və ya əlaqələr (foreign keys) fərqlidirmi, yoxsa bu struktur sənə tam uyğun gəldi?
+
+
+
+
+cedveller beledi CREATE TABLE Customers (
+    CustomerID INT IDENTITY(1,1) PRIMARY KEY,
+    CustomerName NVARCHAR(100) NOT NULL,
+    City NVARCHAR(50),
+    Gender CHAR(1),
+    BirthDate DATE
+);
+
+CREATE TABLE Products (
+    ProductID INT IDENTITY(1,1) PRIMARY KEY,
+    ProductName NVARCHAR(100) NOT NULL,
+    Category NVARCHAR(50),
+    Price DECIMAL(10,2) NOT NULL
+);
+
+CREATE TABLE Orders (
+    OrderID INT IDENTITY(1,1) PRIMARY KEY,
+    CustomerID INT,
+    OrderDate DATE NOT NULL,
+    FOREIGN KEY (CustomerID) REFERENCES Customers(CustomerID)
+);
+
+CREATE TABLE OrderDetails (
+    OrderDetailID INT IDENTITY(1,1) PRIMARY KEY,
+    OrderID INT,
+    ProductID INT,
+    Quantity INT NOT NULL,
+    FOREIGN KEY (OrderID) REFERENCES Orders(OrderID),
+    FOREIGN KEY (ProductID) REFERENCES Products(ProductID)
+);
+Verdiyin cədvəl strukturuna (sütun adları: Price, Quantity və s.) tam uyğunlaşdırılmış SQL sorğuları aşağıdadır. Subquery (alt sorğu) tələblərini hər bir bənddə nəzərə almışam.
+sql
+-- 1) Hər sifariş üçün: CustomerName, OrderDate, Ümumi məbləğ
+SELECT 
+    c.CustomerName,
+    o.OrderDate,
+    SUM(od.Quantity * p.Price) AS TotalAmount 
+FROM Order o
+JOIN Customers c on c.CustomerID = o.CustomerID
+JOIN OrderDetails od on od.OrderID=o.OrderID
+JOIN Products p ON od.ProductID = p.ProductID 
+GROUP BY c.CustomerName,o.OrderDate,;
+
+-- 2) Heç sifarişi olmayan müştərilər
+SELECT c.CustomerID, c.CustomerName,c.City
+FROM Customers
+LEFT JOIN Orders o on o.CustomerID=c.CustomerID
+WHERE o.CustomerID IS NULL;
+
+-- 3) Hər məhsul üçün: ProductName, Category, Neçə fərqli sifarişdə olub
+SELECT 
+    p.ProductName, 
+    p.Category,
+    COUNT(DISTINCT od.OrderID) AS OrderCount
+FROM Products p
+LEFT JOIN OrderDetails od on od.ProductID = p.ProductID
+GROUP BY p.ProductName,p.Category) ;
+
+-- 4) Şəhər üzrə: Müştəri sayı
+SELECT City, COUNT(CustomerID) AS CustomerCount
+FROM Customers
+GROUP BY City;
+
+-- 5) Hər müştəri üzrə: Ümumi sifariş sayı, Ümumi alış məbləği
+SELECT 
+    CustomerName,
+    COUNT(o.OrderID) TotalOrders,
+    SUM(od.Quantity * p.Price) TotalSpent
+FROM Customers c
+LEFT JOIN ORDERS o ON o.CustomerID = c.CustomerID
+LEFT JOIN OrderDetails od ON od.OrderID = o.OrderID
+LEFT JOIN Products p ON od.ProductID = p.ProductID
+GROUP BY P.CustomerName;
+
+-- 6) Kateqoriya üzrə: Satılan məhsul sayı (Quantity), Ümumi satış məbləği
+SELECT 
+    p.Category,
+    SUM(od.Quantity) AS TotalQuantity,
+    SUM(od.Quantity * p.Price) AS TotalRevenue
+FROM OrderDetails od
+JOIN Products p ON od.ProductID = p.ProductID
+GROUP BY p.Category;
+
+-- 7) Heç satılmayan məhsullar (Subquery istifadə et)
+SELECT p.ProductID,p.ProductName
+FROM Products p
+LEFT JOIN OrderDetails od on od.ProductID=p.ProductID
+where od.ProductI IS NULL;
+
+-- 8) Ən çox sifariş verən müştəri (Subquery ilə)
+SELECT TOP 1 
+    C.CustomerName, 
+    COUNT(O.OrderID) AS SifarisSayi
+FROM Customers C
+JOIN Orders O ON C.CustomerID = O.CustomerID
+GROUP BY C.CustomerID, C.CustomerName
+ORDER BY SifarisSayi DESC;
+
+-- 9) Ən çox gəlir gətirən məhsul
+SELECT TOP 1 ProductName
+FROM Products p
+JOIN OrderDetails od ON p.ProductID = od.ProductID
+GROUP BY p.ProductID, p.ProductName
+ORDER BY SUM(od.Quantity * p.Price) DESC;
+
+-- 10) Hər ay üzrə ümumi satış məbləği
+SELECT 
+    FORMAT(o.OrderDate, 'yyyy-MM') AS SaleMonth,
+    SUM(od.Quantity * p.Price) AS MonthlyTotal
+FROM Orders o
+JOIN OrderDetails od ON o.OrderID = od.OrderID
+JOIN Products p ON od.ProductID = p.ProductID
+GROUP BY FORMAT(o.OrderDate, 'yyyy-MM');
+
+-- 11) Ən çox məhsul (Quantity) alan müştəri
+SELECT TOP 1 CustomerName
+FROM Customers
+WHERE CustomerID = (
+    SELECT TOP 1 o.CustomerID
+    FROM Orders o
+    JOIN OrderDetails od ON o.OrderID = od.OrderID
+    GROUP BY o.CustomerID
+    ORDER BY SUM(od.Quantity) DESC
+);
+
+-- 12) Orta sifariş məbləği
+SELECT AVG(OrderTotals.Total) AS AverageOrderValue
+FROM (
+    select(
+    od.OrderID, 
+    SUM(od.Quantity * p.Price) AS Total
+FROM OrderDetails od
+JOIN Products p ON od.ProductID = p.ProductID
+GROUP BY od.OrderID
+) AS OrderTotals;
+
+-- 13) Hər sifariş üçün neçə fərqli məhsul alındığını göstər
+SELECT OrderID, COUNT(ProductID) AS UniqueProductCount
+FROM OrderDetails
+GROUP BY OrderID;
+
+-- 14) 1000-dən çox alış edən müştərilər
+SELECT c.CustomerName
+FROM Customers c
+JOIN Orders o ON c.CustomerID = o.CustomerID
+JOIN OrderDetails od ON o.OrderID = od.OrderID
+JOIN Products p ON od.ProductID = p.ProductID
+GROUP BY c.CustomerID, c.CustomerName
+HAVING SUM(od.Quantity * p.Price) > 1000;

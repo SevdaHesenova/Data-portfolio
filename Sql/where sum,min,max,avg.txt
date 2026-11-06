@@ -1,0 +1,50 @@
+- 1) Ortalama maaşdan yüksək maaş alan işçiləri tap
+SELECT FullName, Salary 
+FROM Employees 
+WHERE Salary > (SELECT AVG(Salary) FROM Employees);
+
+-- 2) Ən yüksək maaş alan işçini tap
+SELECT FullName, Salary 
+FROM Employees 
+WHERE Salary = (SELECT MAX(Salary) FROM Employees);
+
+-- 3) Ən aşağı maaş alan işçini tap
+SELECT FullName, Salary 
+FROM Employees 
+WHERE Salary = (SELECT MIN(Salary) FROM Employees);
+
+-- 4) Baku-da yerləşən department-lərdə işləyən işçiləri tap
+SELECT FullName 
+FROM Employees 
+WHERE DepartmentID IN (SELECT DepartmentID FROM Departments WHERE Location = 'Baku');
+
+-- 5) Finance department-ində işləyən işçilərin siyahısını subquery ilə çıxar
+SELECT FullName 
+FROM Employees 
+WHERE DepartmentID = (SELECT DepartmentID FROM Departments WHERE DepartmentName = 'Finance');
+
+-- 6) Marketing və IT department-lərində işləyən işçiləri subquery ilə tap
+SELECT FullName, DepartmentID 
+FROM Employees 
+WHERE DepartmentID IN (SELECT DepartmentID FROM Departments WHERE DepartmentName IN ('Marketing', 'IT'));
+
+-- 7) Öz department-ində ortalamadan yüksək maaş alan işçiləri tap (Correlated Subquery)
+SELECT FullName, Salary, DepartmentID
+FROM Employees e1
+WHERE Salary > (SELECT AVG(Salary) FROM Employees e2 WHERE e2.DepartmentID = e1.DepartmentID);
+
+-- 8) Öz department-ində ən yüksək maaş alan işçiləri tap
+SELECT FullName, Salary, DepartmentID
+FROM Employees e1
+WHERE Salary = (SELECT MAX(Salary) FROM Employees e2 WHERE e2.DepartmentID = e1.DepartmentID);
+
+-- 9) Ən azı 1 order edən işçiləri tap
+SELECT FullName 
+FROM Employees 
+WHERE EmployeeID IN (SELECT DISTINCT EmployeeID FROM Orders);
+
+-- 10) Maaşı ümumi ortalamadan aşağı olan, amma order edən işçiləri tap
+SELECT FullName, Salary 
+FROM Employees 
+WHERE Salary < (SELECT AVG(Salary) FROM Employees)
+  AND EmployeeID IN (SELECT EmployeeID FROM Orders);

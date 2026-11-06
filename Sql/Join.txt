@@ -1,0 +1,87 @@
+- 1) Hər bir müştərinin neçə adresi olduğunu tapın
+SELECT U.NAMESURNAME, COUNT(A.ID) AS AddressCount
+FROM USERS U
+LEFT JOIN ADDRES A ON U.ID = A.USERID
+GROUP BY U.ID, U.NAMESURNAME;
+
+-- 2) Hər bir category-də neçə item (məhsul) olduğunu tapın
+SELECT CATEGORY1, COUNT(ID) AS ItemCount
+FROM ITEM
+GROUP BY CATEGORY1;
+
+
+-- 3) Hər bir category-aya neçə alt categoriyanın daxil olduğunu tapın
+SELECT CATEGORY1, COUNT(DISTINCT CATEGORY2) AS SubCategoryCount
+FROM ITEM
+GROUP BY CATEGORY1;
+
+-- 4) Hər bir Sifarişə (order) neçə məhsul olduğunu tapın
+SELECT O.ID AS OrderID, COUNT(OD.ITEMID) AS ProductCount
+FROM ORDER_ O
+JOIN ORDERDETAIL OD ON O.ID = OD.ORDERID
+GROUP BY O.ID;
+
+-- 5) Hər sifarişdə səbətə (basket) neçə item atıldığını tapın
+SELECT 
+B.ID AS BasketID, 
+COUNT(BD.ITEMID) AS TotalQuantity
+FROM BASKET B
+JOIN BASKETDETAIL BD ON B.ID = BD.BASKETID
+GROUP BY B.ID;
+
+-- 7) Hər bir satış fakturasında (Invoice) olan itemların ümumi satış məbləğini tapın
+SELECT 
+I.ID AS InvoiceID,
+SUM(IDET.TOTALPRICE) AS TotalAmount
+FROM INVOICE I
+JOIN INVOICEDETAIL IDET ON I.ID = IDET.INVOICEID
+GROUP BY I.ID, ;
+
+-- 8) Ən bahalı 5 məhsulu (ITEM) qiymətə görə TOP 5 qaytar
+SELECT TOP 5 ITEMNAME,sum(i.PRICE)
+FROM ITEM i
+join INVOICEDETAIL INV on i.ID=INV.ID
+ORDER BY 2 DESC;
+
+-- 9) Hər bir city-ə neçə TOWN daxil olduğunu tapın
+SELECT C.CITY, COUNT(T.ID) AS TownCount
+FROM CITY C
+LEFT JOIN TOWN T ON C.ID = T.CITYID
+GROUP BY C.ID, C.CITY;
+
+-- 10) Hər bir TOWN-a neçə DISTRICT daxil olduğunu tapın
+SELECT T.TOWN, COUNT(D.ID) AS DistrictCount
+FROM TOWN T
+LEFT JOIN DISTRICT D ON T.ID = D.TOWNID
+GROUP BY T.ID, T.TOWN;
+
+-- 11) Hər bir CITY-ə neçə DISTRICT daxil olduğunu tapın
+SELECT C.CITY, COUNT(D.ID) AS DistrictCount
+FROM CITY C
+JOIN TOWN T ON C.ID = T.CITYID
+JOIN DISTRICT D ON T.ID = D.TOWNID
+GROUP BY C.ID, C.CITY;
+
+-- 12) Hər TOWN-a neçə adress daxil olduğunu tapın
+SELECT T.TOWN, COUNT(A.ID) AS AddressCount
+FROM TOWN T
+LEFT JOIN ADDRES A ON T.ID = A.TOWNID
+GROUP BY T.ID, T.TOWN;
+
+-- 13) Hər CITY-ə neçə adress daxil olduğunu tapın
+SELECT C.CITY, COUNT(A.ID) AS AddressCount
+FROM CITY C
+LEFT JOIN ADDRES A ON C.ID = A.CITYID
+GROUP BY C.ID, C.CITY;
+
+-- 14) Hər Müştərinin neçə adress daxil olduğunu tapın (Adı ilə)
+SELECT U.NAMESURNAME, COUNT(A.ID) AS AddressCount
+FROM USERS U
+LEFT JOIN ADDRES A ON U.ID = A.USERID
+GROUP BY U.ID, U.NAMESURNAME;
+
+-- 15) Hər ödəniş tipi neçə səbətdə özünü göstərib (JOIN ilə)
+SELECT P.PAYMENTTYPE, COUNT(B.ID) AS BasketCount
+FROM PAYMENT P
+JOIN BASKET B ON P.BASKETID = B.ID
+GROUP BY P.PAYMENTTYPE;

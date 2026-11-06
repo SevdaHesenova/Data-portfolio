@@ -1,0 +1,84 @@
+/*1.Customer  Cədvəlindəki məlumatların 3-cü səhifəsini göstərin.
+Hər səhifə 5 sətirdən ibarət olsun.
+
+select * from CUSTOMER 
+order by ID
+offset 10 rows
+fetch next 5 rows only
+
+2. Müştərilərin yalnız ad, yaş və cinsiyyət məlumatlarını seçin və yaşı azdan-çoxa doğru sıralayın.
+
+select CUSTOMERNAME as AD,AGE as YASH,GENDER as Cinsiyyet from CUSTOMER
+order by AGE
+
+3.Müştərilərin doğum tarixlərini artan sıra ilə sıralayıb yalnız ilk 5 nəticəni göstərin.
+
+select top 5 BIRTHDATE as "Dogum tarixi" from CUSTOMER 
+order by BIRTHDATE
+
+4. Şəhərlərin siyahısını təkrarsız göstərin.
+
+select distinct CITY as SHEHER from CUSTOMER
+
+5.Ən birinci gələn 10 müştərini seçin və 10-uncu müştəri ilə eyni yaşa sahib olan bütün müştərilərin məlumatlarınıda göstərin.
+
+select top 10 with ties * from CUSTOMER
+order by AGE
+
+6.CUSTOMERNAME sütununu “FullName” adı ilə göstərin.
+
+select CUSTOMERNAME as FullName from CUSTOMER
+
+7.Müştərilərin adlarını və yaşlarını seçin, yaşa görə azalan sıralayın,
+lakin nəticədə 6 - 10-cu sətirləri göstərin.
+
+Select CUSTOMERNAME as AD,AGE as YASH from CUSTOMER
+order by AGE desc
+offset 5 rows
+FETCH NEXT 5 rows only
+
+8.Müştərilərin yalnız CITY və DISTRICT məlumatlarını seçin və
+nəticəni şəhərə görə artan, rayona görə azalan sırada göstərin.
+
+9.Müştərilərin GENDER dəyərlərini təkrarsız (distinct) şəkildə göstərin və
+əlifba sırası ilə sıralayın.
+
+select distinct GENDER from CUSTOMER
+order by GENDER
+
+10.Yaşı 30-dan böyük olan ilk 7 müştərini göstərin.
+(Nəticə yaşı artan sıra ilə olmalıdır.)
+
+select top 7 CUSTOMERNAME as AD,AGE as YASH from CUSTOMER
+order by AGE
+
+11.Müştərilərin ID, CUSTOMERNAME və BIRTHDATE məlumatlarını seçin və
+doğum tarixinə görə ən köhnə 5 müştərini göstərin.
+
+select top 5 ID,CUSTOMERNAME,BIRTHDATE from CUSTOMER
+order by BIRTHDATE DESC
+
+12.Müştərilərin CITY siyahısını təkrarsız göstərin və
+yalnız ilk 6 şəhəri nəticədə saxlayın.
+
+select distinct top 6 CITY from CUSTOMER
+order by CITY
+
+13.Müştərilərin CUSTOMERNAME və AGE məlumatlarını seçin.
+Yaşa görə azalan sırala və ilk 3 sətiri ötürüb (skip) növbəti 5 sətiri göstər.
+
+select CUSTOMERNAME,AGE from CUSTOMER
+order by AGE desc
+offset 3 rows
+fetch next 5 rows only 
+
+14.Müştəriləri CITY-yə görə sıralayın və
+hər şəhərdən ilk gələn 1 müştərini göstərmək üçün yalnız TOP + ORDER BY istifadə edin.
+(Qrup mövzusu keçilməyib, ona görə sadə yanaşma gözlənilir.)
+
+
+15.Müştərilərin CUSTOMERNAME sütununu “MusteriAdi”,AGE sütununu “Yas” alias-ı ilə göstərin və
+nəticəni Yas sütununa görə artan sırada düzün.
+
+select CUSTOMERNAME as "MusteriAdi",AGE as "YAS" from CUSTOMER
+order by AGE
